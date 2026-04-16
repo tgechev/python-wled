@@ -76,6 +76,7 @@
     "ws": 0,
     "fxcount": 187,
     "palcount": 71,
+    "cpalcount": 2,
     "wifi": {
       "bssid": "AA:BB:CC:DD:EE:FF",
       "rssi": -62,
