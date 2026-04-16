@@ -603,9 +603,11 @@ def test_device_from_dict_full() -> None:
     assert device.effects[1].name == "Blink"
     assert device.effects[2].name == "Breathe"
 
-    # Palettes
-    assert len(device.palettes) == 3
+    # Palettes (3 standard + 2 custom)
+    assert len(device.palettes) == 5
     assert device.palettes[0].name == "Default"
+    assert device.palettes[255].custom is True
+    assert device.palettes[255].name == "Custom 1"
 
     # Presets (key 0 is dropped, key 2 has a playlist so excluded)
     assert 1 in device.presets
@@ -688,8 +690,11 @@ def test_device_update_from_dict_palettes() -> None:
     data = full_device_data()
     device = Device.from_dict(data)
     device.update_from_dict({"palettes": ["NewPalette"]})
-    assert len(device.palettes) == 1
+    # 1 standard + 2 custom (from cpalcount in fixture)
+    assert len(device.palettes) == 3
     assert device.palettes[0].name == "NewPalette"
+    assert device.palettes[255].custom is True
+    assert device.palettes[254].custom is True
 
 
 def test_device_update_from_dict_presets() -> None:

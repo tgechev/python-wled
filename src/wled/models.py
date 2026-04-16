@@ -178,6 +178,7 @@ class Palette(BaseModel):
 
     """
 
+    custom: bool = False
     name: str
     palette_id: int
 
@@ -463,6 +464,11 @@ class Info(BaseModel):  # pylint: disable=too-many-instance-attributes
 
     name: str = "WLED Light"
     """Friendly name of the light. Intended for display in lists and titles."""
+
+    custom_palette_count: int = field(
+        default=0, metadata=field_options(alias="cpalcount")
+    )
+    """Number of custom palettes configured."""
 
     palette_count: int = field(default=0, metadata=field_options(alias="palcount"))
     """Number of palettes configured."""
@@ -756,6 +762,16 @@ class Device(BaseModel):
                 palette_id: {"palette_id": palette_id, "name": name}
                 for palette_id, name in enumerate(_palettes)
             }
+            # Custom palettes are not included in the palettes list,
+            # but their count is reported via cpalcount. Their IDs
+            # count down from 255.
+            for i in range(d.get("info", {}).get("cpalcount", 0)):
+                palette_id = 255 - i
+                d["palettes"][palette_id] = {
+                    "palette_id": palette_id,
+                    "name": f"Custom {i + 1}",
+                    "custom": True,
+                }
         elif _palettes is None:
             # Some less capable devices don't have palettes and
             # will return `null`.
@@ -814,6 +830,11 @@ class Device(BaseModel):
                 palette_id: Palette(palette_id=palette_id, name=name)
                 for palette_id, name in enumerate(_palettes)
             }
+            for i in range(self.info.custom_palette_count):
+                palette_id = 255 - i
+                self.palettes[palette_id] = Palette(
+                    palette_id=palette_id, name=f"Custom {i + 1}", custom=True
+                )
 
         if _presets := data.get("presets"):
             # The preset data contains both presets and playlists,
